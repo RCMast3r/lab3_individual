@@ -1,5 +1,5 @@
 #include "dcl.h"
-
+#include <iostream>
 using namespace std;
 
 
@@ -13,9 +13,13 @@ void generate_sparse_matrix_csr(data_t values[], int column_indices[], int row_p
             if ((float)rand() / RAND_MAX < SPARSITY) {
                 values[count] = (data_t)(2.0 * (float)rand() / RAND_MAX - 1.0); // Random non-zero value
                 column_indices[count] = j;
+                std::cout << values[count].to_float() << ", ";
                 count++;
+            } else {
+                std::cout << 0 << ", ";
             }
         }
+        std::cout << std::endl;
         row_ptr[i + 1] = count;
     }
 
@@ -31,10 +35,14 @@ void generate_sparse_matrix_csc(data_t values[], int row_indices[], int col_ptr[
         for (int i = 0; i < rows; i++) {
             if ((float)rand() / RAND_MAX < SPARSITY) {
                 values[count] = (data_t)(2.0 * (float)rand() / RAND_MAX - 1.0); // Random non-zero value
-                row_indices[count] = i;
+                row_indices[count] = i; // the row index is always increasing?
+                std::cout << values[count].to_float() << ", ";
                 count++;
+            } else {
+                std::cout << 0 << ", ";
             }
         }
+        std::cout << std::endl;
         col_ptr[j + 1] = count;
     }
 
@@ -74,6 +82,8 @@ int main() {
 
     // Generate sparse matrices
     generate_sparse_matrix_csr(values_A, column_indices_A, row_ptr_A, &nnz_A, N, M);
+    std::cout <<std::endl;
+    std::cout <<std::endl;
     generate_sparse_matrix_csc(values_B, row_indices_B, col_ptr_B, &nnz_B, M, K);
 
     // Save matrices to files

@@ -8,12 +8,13 @@ IFLAG += -g
 
 CFLAG += -fPIC -O0
 CFLAG += -lm
-CFLAG += -std=c++11 -Wno-unused-result 
+CFLAG += -std=c++14 -Wno-unused-result 
 
 all:
-	#g++ generate_matrices.cpp -o result $(CFLAG) $(IFLAG)
-	#g++ compute_SpMM.cpp -o result $(CFLAG) $(IFLAG)
-	g++ host.cpp top.cpp -o result $(CFLAG) $(IFLAG)
+	g++ generate_matrices.cpp -o gen_mats $(CFLAG) $(IFLAG)
+	g++ compute_SpMM.cpp -o compute_test $(CFLAG) $(IFLAG)
+	g++ compute_SpMM_test.cpp -o test_print $(CFLAG) $(IFLAG)
+	g++ host.cpp top.cpp -o result $(CFLAG) $(IFLAG) 
 	
 	
 clean:

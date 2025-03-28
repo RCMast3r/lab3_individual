@@ -1,7 +1,7 @@
 #include "dcl.h"
+#include <iostream>
 
 using namespace std;
-
 
 // Function to read a sparse matrix in CSR format
 void read_sparse_matrix_csr(const char *filename, data_t values[], int column_indices[], int row_ptr[], int *nnz) {
@@ -48,13 +48,17 @@ void sparse_matrix_multiply(data_t values_A[], int column_indices_A[], int row_p
             float value_A = values_A[idx_A].to_float();
 
             // Iterate over columns of B corresponding to row k
+            int prev_j = -1;
+            std::cout <<"counts: " << col_ptr_B[k] <<" " << col_ptr_B[k+1] <<std::endl;
             for (int idx_B = col_ptr_B[k]; idx_B < col_ptr_B[k + 1]; idx_B++) {
+                
                 int j = row_indices_B[idx_B]; // Row index of B
                 float value_B = values_B[idx_B].to_float();
-
+                std::cout << i<< " " << j <<std::endl;
                 // Accumulate the product into C[i][j]
                 C[i][j] += value_A * value_B;
             }
+            // std::cout << std::endl;
         }
     }
 }
@@ -93,8 +97,13 @@ int main() {
     // Perform Sparse x Sparse Multiplication
     sparse_matrix_multiply(values_A, column_indices_A, row_ptr_A, nnz_A,
                            values_B, row_indices_B, col_ptr_B, nnz_B, C);
-
-    // Convert and write the resulting matrix C back to binary file
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < K; j++) {
+            std::cout << C[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+    // // Convert and write the resulting matrix C back to binary file
     char output_filename[50];
     snprintf(output_filename, sizeof(output_filename), "C_matrix_result_sparsity_%.2f.bin", SPARSITY);
 

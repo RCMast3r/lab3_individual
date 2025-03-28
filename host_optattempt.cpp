@@ -1,8 +1,7 @@
+#include <hls_vector.h>
+#include <array>
 #include "dcl.h"
 
-#include <iostream>
-#include <iomanip>
-#include <cmath>
 using namespace std;
 
 // Function to read a sparse matrix in CSR format
@@ -103,33 +102,59 @@ int main() {
     snprintf(filename_C, sizeof(filename_B), "C_matrix_result_sparsity_%.2f.bin", SPARSITY);
     read_dense_matrix(filename_C, C_ref);
     
-    // Initialize output matrix C_HLS
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < K; j++) {
-            C_HLS[i][j] = 0;
-        }
+    // for (int i = 0; i < N; i++) {
+    //     for (int j = 0; j < K; j++) {
+    //         C_HLS[i][j] = 0;
+    //     }
+    // }
+
+    // copy to a vector to be used in HLS
+    hls::vector<data_t, N*M> values_A_vec;
+    hls::vector<index_t, N*M> column_indices_A_vec;
+
+    hls::vector<data_t, M*K> values_B_vec;
+    hls::vector<index_t, M*K> row_indices_B_vec;
+
+    hls::vector<index_t, M+1> col_ptr_B_vec;
+    hls::vector<index_t, N+1> row_ptr_A_vec;
+    for (size_t i = 0; i < (N*M); ++i) {
+        values_A_vec[i] = values_A[i];
+        column_indices_A_vec[i] = column_indices_A[i];
     }
 
+    // Copy values_B and row_indices_B to 2D hls::vector
+    for (size_t i = 0; i < (M*K); ++i) {
+        values_B_vec[i] = values_B[i];
+        row_indices_B_vec[i] = row_indices_B[i];
+    }
+    // // Copy col_ptr_B
+    for (size_t i = 0; i < M + 1; ++i) {
+        col_ptr_B_vec[i] = col_ptr_B[i];
+    }
+
+    // Copy row_ptr_A
+    for (size_t i = 0; i < N + 1; ++i) {
+        row_ptr_A_vec[i] = row_ptr_A[i];
+    }
+
+    // Initialize output matrix C_HLS
+    hls::vector<data_t, K> C_HLS_vec[N];
+    for (size_t i = 0; i < N; ++i) {
+        for (size_t j = 0; j < K; ++j) {
+            C_HLS_vec[i][j] = 0;
+        }
+    }
     // Call HLS kernel to perform SpMM
-    sparse_matrix_multiply_HLS(values_A, column_indices_A, row_ptr_A,
-                           values_B, row_indices_B, col_ptr_B, C_HLS);
+    sparse_matrix_multiply_HLS(&values_A_vec, &column_indices_A_vec, &row_ptr_A_vec,
+                               &values_B_vec, &row_indices_B_vec, &col_ptr_B_vec, C_HLS_vec);
 
  	float error = 0;
 	// compare HLS output and reference output tensor
-	// for(int i = 0; i < N; i++) {
-	// 	for(int j = 0; j < K; j++) {
-            
-	// 		error += std::pow(C_HLS[i][j].to_float() - C_ref[i][j].to_float(), 2);
-	// 	}
-	// }
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < K; j++) {
-            std::cout << std::fixed << std::setprecision(3) 
-                    << C_HLS[i][j].to_float() << " ";
-            error += std::pow(C_HLS[i][j].to_float() - C_ref[i][j].to_float(), 2);
-        }
-        std::cout << std::endl; // Print a new line after each row
-    }
+	for(int i = 0; i < N; i++) {
+		for(int j = 0; j < K; j++) {
+			error += std::pow(C_HLS_vec[i][j].to_float() - C_ref[i][j].to_float(), 2);
+		}
+	}
 	error = error / (N * K);
 	printf("MSE: %.8f\n", error);
 

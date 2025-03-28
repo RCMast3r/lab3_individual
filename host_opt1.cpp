@@ -1,8 +1,5 @@
 #include "dcl.h"
 
-#include <iostream>
-#include <iomanip>
-#include <cmath>
 using namespace std;
 
 // Function to read a sparse matrix in CSR format
@@ -116,20 +113,11 @@ int main() {
 
  	float error = 0;
 	// compare HLS output and reference output tensor
-	// for(int i = 0; i < N; i++) {
-	// 	for(int j = 0; j < K; j++) {
-            
-	// 		error += std::pow(C_HLS[i][j].to_float() - C_ref[i][j].to_float(), 2);
-	// 	}
-	// }
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < K; j++) {
-            std::cout << std::fixed << std::setprecision(3) 
-                    << C_HLS[i][j].to_float() << " ";
-            error += std::pow(C_HLS[i][j].to_float() - C_ref[i][j].to_float(), 2);
-        }
-        std::cout << std::endl; // Print a new line after each row
-    }
+	for(int i = 0; i < N; i++) {
+		for(int j = 0; j < K; j++) {
+			error += std::pow(C_HLS[i][j].to_float() - C_ref[i][j].to_float(), 2);
+		}
+	}
 	error = error / (N * K);
 	printf("MSE: %.8f\n", error);
 

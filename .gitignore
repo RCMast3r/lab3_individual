@@ -1,3 +1,7 @@
 project_1/
 result
 *.log
+project_*/
+test_print
+gen_mats
+compute_test
